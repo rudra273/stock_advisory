@@ -1,6 +1,7 @@
 import requests
 from app.core.config import settings
 
+api_key = settings.GOOGLE_SEARCH_API_KEY
 
 
 def google_search(query):
@@ -14,7 +15,6 @@ def google_search(query):
     Returns:
         list: A list of dictionaries containing search results
     """
-    api_key = settings.GOOGLE_SEARCH_API_KEY
     search_engine_id = settings.SEARCH_ENGINE_ID
     
     # Add search type parameter to restrict to only websites

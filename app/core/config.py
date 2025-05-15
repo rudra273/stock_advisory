@@ -20,8 +20,10 @@ class Settings(BaseSettings):
     
     # # Financial data API keys
     ALPHA_VANTAGE_API_KEY: Optional[str] = None
-    # IEX_CLOUD_API_KEY: Optional[str] = None
-    
+    FINNHUB_API_KEY: Optional[str] = None
+    NEWSAPI_KEY: Optional[str] = None
+
+
     # Database settings
     POSTGRES_SERVER: str = "localhost"
     POSTGRES_PORT: str = "5432"

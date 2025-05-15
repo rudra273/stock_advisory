@@ -1,3 +1,7 @@
+'''
+For the global stock news.
+'''
+
 import requests
 from app.core.config import settings
 
