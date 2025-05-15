@@ -19,7 +19,7 @@ class Settings(BaseSettings):
     DEFAULT_LLM_PROVIDER: str = "openai"
     
     # # Financial data API keys
-    # ALPHA_VANTAGE_API_KEY: Optional[str] = None
+    ALPHA_VANTAGE_API_KEY: Optional[str] = None
     # IEX_CLOUD_API_KEY: Optional[str] = None
     
     # Database settings
