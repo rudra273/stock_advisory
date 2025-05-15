@@ -9,3 +9,5 @@ response = requests.get(url)
 results = response.json()
 for item in results.get("items", []):
     print(item["title"], item["link"])
+
+# new line
