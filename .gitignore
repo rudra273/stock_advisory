@@ -1,0 +1,128 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environment
+venv/
+env/
+ENV/
+.env
+.venv
+env.bak/
+venv.bak/
+
+# PyCharm
+.idea/
+*.iml
+*.iws
+.idea_modules/
+out/
+
+# VS Code
+.vscode/
+*.code-workspace
+.history/
+
+# FastAPI
+.coverage
+htmlcov/
+
+# Docker
+.docker/
+.dockerignore
+docker-compose.override.yml
+
+# Databases
+*.sqlite3
+*.db
+data/
+
+# PostgreSQL
+postgres_data/
+
+# InfluxDB
+influxdb_data/
+
+# Redis
+redis_data/
+*.rdb
+
+# Grafana
+grafana_data/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Environment variables
+.env.local
+.env.development
+.env.test
+.env.production
+
+# API Keys and secrets
+*.pem
+*.key
+secrets/
+
+# Jupyter Notebooks
+.ipynb_checkpoints
+*.ipynb
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# Testing
+.coverage
+htmlcov/
+.pytest_cache/
+.tox/
+.nox/
+coverage.xml
+*.cover
+.hypothesis/
+
+# Temporary files
+*.swp
+*.swo
+temp/
+tmp/
+
+
+INFO.md
