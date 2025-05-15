@@ -1,5 +1,7 @@
 from app.services.search import google, alpha_vantage, finnhub, news_org
 
+from app.services.crawler.market_index import fear_greed_index, mmi
+
 ticker = 'AAPL' 
 indian = "RELIANCE power"
 
@@ -20,6 +22,28 @@ indian = "RELIANCE power"
 
 # NEWS ORG
 # news = news_org.fetch_news()
-# indian = news_org.fetch_indian_news(stock="RELIANCE power")
+# indian = news_org.fetch_indian_news() # can add stock parameter
 
-print(indian) 
+# print(indian) 
+
+
+cnn_data = fear_greed_index()
+mmi_data = mmi()
+
+if cnn_data:
+    print("--- CNN Fear & Greed Index ---")
+    print(f"Score: {cnn_data['score']}")
+    print(f"Rating: {cnn_data['rating']}")
+    print(f"Last Updated: {cnn_data['last_updated']}")
+    print(f"Source: {cnn_data['source']}")
+else:
+    print("Failed to retrieve CNN Fear & Greed Index.")
+
+if mmi_data:
+    print("\n--- Market Mood Index ---")
+    print(f"Score: {mmi_data['score']}")
+    print(f"Rating: {mmi_data['rating']}")
+    print(f"Last Updated: {mmi_data['last_updated']}")
+    print(f"Source: {mmi_data['source']}")
+else:
+    print("\nFailed to retrieve Market Mood Index.")
