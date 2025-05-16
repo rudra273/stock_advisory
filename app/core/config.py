@@ -36,6 +36,9 @@ class Settings(BaseSettings):
     # VECTOR_DB_TYPE: str = "pinecone"  # Options: pinecone, weaviate
     # PINECONE_API_KEY: Optional[str] = None
     # PINECONE_ENVIRONMENT: Optional[str] = None
+
+    # CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "redis://redis:6379/0")
+    # CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND", "redis://redis:6379/0")
     
     
     class Config:
