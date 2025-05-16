@@ -2,9 +2,9 @@
 from app.services.llm.gemini_llm import GeminiLLM
 from app.services.llm.openai_llm import OpenAILLM
 
-# llm = GeminiLLM().get_llm()
+llm = GeminiLLM().get_llm()
 
-llm = OpenAILLM().get_llm()
+# llm = OpenAILLM().get_llm()
 
 # Define the prompt
 prompt = "Explain the concept of LangChain in simple terms."
