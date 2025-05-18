@@ -1,5 +1,6 @@
 import uvicorn
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware # Import CORSMiddleware
 from app.core.config import settings
 from app.api.routes.ingest import router as ingest_router 
 from app.db.db_init import init_db
@@ -12,7 +13,19 @@ app = FastAPI(
     version="0.1.0"
 )
 
+origins = [
+    "http://localhost",
+    "http://localhost:3000",  # Example: if your frontend runs on port 3000
+    "*" # WARNING: Using "*" allows all origins. Restrict this in production.
+]
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins, # List of allowed origins
+    allow_credentials=True, # Allow cookies to be included in requests
+    allow_methods=["*"], # Allow all HTTP methods (GET, POST, PUT, DELETE, etc.)
+    allow_headers=["*"], # Allow all headers
+)
 # letter will be replced by alembic
 @app.on_event("startup")
 def on_startup():
