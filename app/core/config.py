@@ -24,18 +24,8 @@ class Settings(BaseSettings):
     NEWSAPI_KEY: Optional[str] = None
 
 
-    # Database settings
-    POSTGRES_SERVER: str = "localhost"
-    POSTGRES_PORT: str = "5432"
-    POSTGRES_USER: str = "postgres"
-    POSTGRES_PASSWORD: str = "postgres"
-    POSTGRES_DB: str = "stock_advisory"
     DATABASE_URL: Optional[str] = None
     
-    # # Vector database settings
-    # VECTOR_DB_TYPE: str = "pinecone"  # Options: pinecone, weaviate
-    # PINECONE_API_KEY: Optional[str] = None
-    # PINECONE_ENVIRONMENT: Optional[str] = None
 
     # CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "redis://redis:6379/0")
     # CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND", "redis://redis:6379/0")
