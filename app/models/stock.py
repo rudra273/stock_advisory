@@ -1,46 +1,18 @@
 # app/models/base.py
-from sqlalchemy import Column, String, Float, BigInteger, Date
-
+from sqlalchemy import Column, String, Float, BigInteger, Date, Numeric
 from app.db.config import Base
 
-class StockInfo(Base):
-    __tablename__ = "stock_info"
+
+
+class CurrentPrice(Base):
+    __tablename__ = "current_prices"
 
     symbol = Column(String, primary_key=True)
-    shortName = Column(String)
-    currency = Column(String)
-    sector = Column(String)
-    industry = Column(String)
+    companyName = Column(String)
     currentPrice = Column(Float)
     previousClose = Column(Float)
-    regularMarketOpen = Column(Float)
-    dayLow = Column(Float)
-    dayHigh = Column(Float)
-    volume = Column(BigInteger)
-    trailingEps = Column(Float)
-    forwardEps = Column(Float)
-    trailingPE = Column(Float)
-    forwardPE = Column(Float)
-    dividendRate = Column(Float)
-    dividendYield = Column(Float)
-    bookValue = Column(Float)
-    priceToBook = Column(Float)
-    priceToSalesTrailing12Months = Column(Float)
-    marketCap = Column(BigInteger)
-    enterpriseValue = Column(BigInteger)
-    beta = Column(Float)
-    trailingPegRatio = Column(Float)
-    returnOnEquity = Column(Float)
-    returnOnAssets = Column(Float)
-    profitMargins = Column(Float)
-    operatingMargins = Column(Float)
-    revenuePerShare = Column(Float)
-    revenueGrowth = Column(Float)
-    earningsQuarterlyGrowth = Column(Float)
-    totalDebt = Column(BigInteger)
-    totalCash = Column(BigInteger)
-    sharesOutstanding = Column(BigInteger)
-
+    Change = Column(Float)
+    PercentChange = Column(Float)
 
 
 class DailyPrice(Base):
@@ -55,16 +27,89 @@ class DailyPrice(Base):
     Volume = Column(BigInteger)
 
 
+class StockInfo(Base):
+    __tablename__ = "stock_info"
+
+    symbol = Column(String, primary_key=True)
+    shortName = Column(String, nullable=True)
+    currency = Column(String, nullable=True)
+    sector = Column(String, nullable=True)
+    industry = Column(String, nullable=True)
+    currentPrice = Column(Float, nullable=True)
+    previousClose = Column(Float, nullable=True)
+    regularMarketOpen = Column(Float, nullable=True)
+    dayLow = Column(Float, nullable=True)
+    dayHigh = Column(Float, nullable=True)
+    volume = Column(BigInteger, nullable=True)
+    trailingEps = Column(Float, nullable=True)
+    forwardEps = Column(Float, nullable=True)
+    trailingPE = Column(Float, nullable=True)
+    forwardPE = Column(Float, nullable=True)
+    dividendRate = Column(Float, nullable=True)
+    dividendYield = Column(Float, nullable=True)
+    bookValue = Column(Float, nullable=True)
+    priceToBook = Column(Float, nullable=True)
+    priceToSalesTrailing12Months = Column(Float, nullable=True)
+    marketCap = Column(Numeric(38, 0), nullable=True)
+    enterpriseValue = Column(Numeric(38, 0), nullable=True)
+    beta = Column(Float, nullable=True)
+    trailingPegRatio = Column(Float, nullable=True)
+    returnOnEquity = Column(Float, nullable=True)
+    returnOnAssets = Column(Float, nullable=True)
+    profitMargins = Column(Float, nullable=True)
+    operatingMargins = Column(Float, nullable=True)
+    revenuePerShare = Column(Float, nullable=True)
+    revenueGrowth = Column(Float, nullable=True)
+    earningsQuarterlyGrowth = Column(Float, nullable=True)
+    totalDebt = Column(Numeric(38, 0), nullable=True)
+    totalCash = Column(Numeric(38, 0), nullable=True)
+    sharesOutstanding = Column(Numeric(38, 0), nullable=True)
+
+
+
+# class BalanceSheet(Base):
+#     __tablename__ = "balance_sheet"
+
+#     symbol = Column(String, primary_key=True)
+#     Date = Column(Date, primary_key=True)
+#     total_assets = Column(Numeric(38, 2))
+#     total_debt = Column(Numeric(38, 2))
+#     stockholders_equity = Column(Numeric(38, 2))
+#     cash_and_cash_equivalents = Column(Numeric(38, 2))
+
+
+# class IncomeStatement(Base):
+#     __tablename__ = "income_statement"
+
+#     symbol = Column(String, primary_key=True)
+#     Date = Column(Date, primary_key=True)
+#     total_revenue = Column(Numeric(38, 2))
+#     gross_profit = Column(Numeric(38, 2))
+#     operating_income = Column(Numeric(38, 2))
+#     net_income = Column(Numeric(38, 2))
+#     basic_eps = Column(Float)  
+#     diluted_eps = Column(Float)  
+
+
+# class CashFlow(Base):
+#     __tablename__ = "cash_flow"
+
+#     symbol = Column(String, primary_key=True)
+#     Date = Column(Date, primary_key=True)
+#     operating_cash_flow = Column(Numeric(38, 2))
+#     capital_expenditure = Column(Numeric(38, 2))
+#     free_cash_flow = Column(Numeric(38, 2))
+#     cash_dividends_paid = Column(Numeric(38, 2))
+
 class BalanceSheet(Base):
     __tablename__ = "balance_sheet"
 
     symbol = Column(String, primary_key=True)
     Date = Column(Date, primary_key=True)
-    Total_Assets = Column("Total Assets", BigInteger)
-    Total_Debt = Column("Total Debt", BigInteger)
-    Stockholders_Equity = Column("Stockholders Equity", BigInteger)
-    Cash_And_Cash_Equivalents = Column("Cash And Cash Equivalents", BigInteger)
-
+    total_assets = Column(Numeric(38, 2), nullable=True)
+    total_debt = Column(Numeric(38, 2), nullable=True)
+    stockholders_equity = Column(Numeric(38, 2), nullable=True)
+    cash_and_cash_equivalents = Column(Numeric(38, 2), nullable=True)
 
 
 class IncomeStatement(Base):
@@ -72,12 +117,12 @@ class IncomeStatement(Base):
 
     symbol = Column(String, primary_key=True)
     Date = Column(Date, primary_key=True)
-    Total_Revenue = Column("Total Revenue", BigInteger)
-    Gross_Profit = Column("Gross Profit", BigInteger)
-    Operating_Income = Column("Operating Income", BigInteger)
-    Net_Income = Column("Net Income", BigInteger)
-    Basic_EPS = Column("Basic EPS", Float)
-    Diluted_EPS = Column("Diluted EPS", Float)
+    total_revenue = Column(Numeric(38, 2), nullable=True)
+    gross_profit = Column(Numeric(38, 2), nullable=True)
+    operating_income = Column(Numeric(38, 2), nullable=True)
+    net_income = Column(Numeric(38, 2), nullable=True)
+    basic_eps = Column(Float, nullable=True)
+    diluted_eps = Column(Float, nullable=True)
 
 
 class CashFlow(Base):
@@ -85,19 +130,7 @@ class CashFlow(Base):
 
     symbol = Column(String, primary_key=True)
     Date = Column(Date, primary_key=True)
-    Operating_Cash_Flow = Column("Operating Cash Flow", BigInteger)
-    Capital_Expenditure = Column("Capital Expenditure", BigInteger)
-    Free_Cash_Flow = Column("Free Cash Flow", BigInteger)
-    Cash_Dividends_Paid = Column("Cash Dividends Paid", BigInteger)
-
-
-
-class CurrentPrice(Base):
-    __tablename__ = "current_prices"
-
-    symbol = Column(String, primary_key=True)
-    companyName = Column(String)
-    currentPrice = Column(Float)
-    previousClose = Column(Float)
-    Change = Column(Float)
-    PercentChange = Column(Float)
+    operating_cash_flow = Column(Numeric(38, 2), nullable=True)
+    capital_expenditure = Column(Numeric(38, 2), nullable=True)
+    free_cash_flow = Column(Numeric(38, 2), nullable=True)
+    cash_dividends_paid = Column(Numeric(38, 2), nullable=True)

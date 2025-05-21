@@ -155,6 +155,7 @@ def fetch_cash_flow() -> Optional[pd.DataFrame]:
 
     # Ensure consistent columns before concatenating if possible
     combined_df = pd.concat(all_cash_flow_dfs, ignore_index=True)
+    # print(combined_df.head()) 
     print("Cash flow ingestion complete.")
     return combined_df
 

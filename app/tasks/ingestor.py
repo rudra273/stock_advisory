@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session
+import pandas as pd
 from app.db.config import get_db
 from app.models.stock import (
     StockInfo, BalanceSheet, IncomeStatement,
@@ -9,6 +10,7 @@ from app.services.stock.helper import (
     fetch_income_statement, fetch_cash_flow,
     fetch_daily_prices, fetch_current_prices
 )
+
 
 def ingest_stock_info():
     df = fetch_stock_info()
@@ -40,15 +42,16 @@ def ingest_income_statement():
             print("Income statement ingested successfully.")
 
 
+
 def ingest_cash_flow():
-    df = fetch_cash_flow()
+    df = fetch_cash_flow() 
     if df is not None and not df.empty:
+        records = df.to_dict(orient="records")  
         with next(get_db()) as db:
             db.query(CashFlow).delete()
-            db.bulk_insert_mappings(CashFlow, df.to_dict(orient="records"))
+            db.bulk_insert_mappings(CashFlow, records)
             db.commit()
-            print("Cash flow ingested successfully.")
-
+            print("Cash flow ingested successfully.") 
 
 def ingest_daily_prices():
     df = fetch_daily_prices()

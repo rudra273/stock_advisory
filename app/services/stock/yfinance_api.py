@@ -72,11 +72,12 @@ def daily_prices(symbol: str) -> pd.DataFrame | None:
         return None
 
 
+
 def balance_sheet(symbol: str) -> pd.DataFrame | None:
     """Fetches balance sheet data for a given symbol and returns a DataFrame with key fields."""
     print(f"Fetching balance sheet for {symbol}...")
     try:
-        ticker_obj = yf.Ticker(symbol) # Instantiate Ticker inside the function
+        ticker_obj = yf.Ticker(symbol)  # Instantiate Ticker inside the function
         balance_sheet_data = ticker_obj.balance_sheet
         if balance_sheet_data.empty:
             print(f"  Warning: Could not fetch balance sheet for {symbol}. Returning None.")
@@ -85,36 +86,45 @@ def balance_sheet(symbol: str) -> pd.DataFrame | None:
         # Transpose and reset index, renaming the index column to "Date"
         bs_df = balance_sheet_data.T.reset_index().rename(columns={"index": "Date"})
 
-        # Keeping original yfinance names for financial line items
-        balance_sheet_cols_available = [
-            'Date', 'Total Assets', 'Total Debt', 'Stockholders Equity', 'Cash And Cash Equivalents'
-        ]
-
         # Add the symbol column
         if 'symbol' not in bs_df.columns:
-            bs_df.insert(0, 'symbol', symbol) # Insert symbol at the beginning
+            bs_df.insert(0, 'symbol', symbol)  # Insert symbol at the beginning
 
-        # Select only the available columns, ensuring 'symbol' is included
-        final_cols = ['symbol'] + balance_sheet_cols_available
-        balance_sheet_cleaned_df = bs_df.reindex(columns=final_cols)
+        # Create a mapping from Yahoo Finance column names to our new database column names
+        column_mapping = {
+            'Total Assets': 'total_assets',
+            'Total Debt': 'total_debt',
+            'Stockholders Equity': 'stockholders_equity',
+            'Cash And Cash Equivalents': 'cash_and_cash_equivalents'
+        }
+        
+        # Create a new DataFrame with our desired column structure
+        result_df = pd.DataFrame()
+        result_df['symbol'] = bs_df['symbol']
+        result_df['Date'] = bs_df['Date']
+        
+        # Map the columns using our mapping
+        for original_col, new_col in column_mapping.items():
+            if original_col in bs_df.columns:
+                result_df[new_col] = bs_df[original_col]
+            else:
+                result_df[new_col] = None  # Add column with NULLs if not available
 
-        # balance_sheet_cleaned_df.to_csv("balance_sheet_cleaned.csv", index=False) # Commented out as requested
         print(f"  Successfully fetched balance sheet for {symbol}.")
-        return balance_sheet_cleaned_df
+        return result_df
 
     except Exception as e:
         print(f"  An error occurred while fetching balance sheet for {symbol}: {e}")
         return None
-
-
+    
 def income_statement(symbol: str) -> pd.DataFrame | None:
     """Fetches income statement data for a given symbol and returns a DataFrame with key fields."""
     print(f"Fetching income statement for {symbol}...")
     try:
-        ticker_obj = yf.Ticker(symbol) # Instantiate Ticker inside the function
-        income_stmt_data = ticker_obj.financials # financials method gets annual income statement
+        ticker_obj = yf.Ticker(symbol)  # Instantiate Ticker inside the function
+        income_stmt_data = ticker_obj.financials  # financials method gets annual income statement
         if income_stmt_data.empty:
-             # Try quarterly if annual is empty
+            # Try quarterly if annual is empty
             income_stmt_data = ticker_obj.quarterly_financials
             if income_stmt_data.empty:
                 print(f"  Warning: Could not fetch income statement (annual or quarterly) for {symbol}. Returning None.")
@@ -123,23 +133,34 @@ def income_statement(symbol: str) -> pd.DataFrame | None:
         # Transpose and reset index, renaming the index column to "Date"
         is_df = income_stmt_data.T.reset_index().rename(columns={"index": "Date"})
 
-        # Keeping original yfinance names for financial line items
-        income_statement_cols_available = [
-            'Date', 'Total Revenue', 'Gross Profit', 'Operating Income', 'Net Income',
-            'Basic EPS', 'Diluted EPS' # Including both Basic and Diluted EPS
-        ]
-
         # Add the symbol column
         if 'symbol' not in is_df.columns:
-             is_df.insert(0, 'symbol', symbol) # Insert symbol at the beginning
+            is_df.insert(0, 'symbol', symbol)  # Insert symbol at the beginning
 
-        # Select only the available columns, ensuring 'symbol' is included
-        final_cols = ['symbol'] + income_statement_cols_available
-        income_statement_cleaned_df = is_df.reindex(columns=final_cols)
+        # Create a mapping from Yahoo Finance column names to our new database column names
+        column_mapping = {
+            'Total Revenue': 'total_revenue',
+            'Gross Profit': 'gross_profit',
+            'Operating Income': 'operating_income',
+            'Net Income': 'net_income',
+            'Basic EPS': 'basic_eps',
+            'Diluted EPS': 'diluted_eps'
+        }
+        
+        # Create a new DataFrame with our desired column structure
+        result_df = pd.DataFrame()
+        result_df['symbol'] = is_df['symbol']
+        result_df['Date'] = is_df['Date']
+        
+        # Map the columns using our mapping
+        for original_col, new_col in column_mapping.items():
+            if original_col in is_df.columns:
+                result_df[new_col] = is_df[original_col]
+            else:
+                result_df[new_col] = None  # Add column with NULLs if not available
 
-        # income_statement_cleaned_df.to_csv("income_statement_cleaned.csv", index=False) # Commented out as requested
         print(f"  Successfully fetched income statement for {symbol}.")
-        return income_statement_cleaned_df
+        return result_df
 
     except Exception as e:
         print(f"  An error occurred while fetching income statement for {symbol}: {e}")
@@ -153,7 +174,7 @@ def cash_flow(symbol: str) -> pd.DataFrame | None:
         ticker_obj = yf.Ticker(symbol) # Instantiate Ticker inside the function
         cash_flow_data = ticker_obj.cashflow
         if cash_flow_data.empty:
-             # Try quarterly if annual is empty
+            # Try quarterly if annual is empty
             cash_flow_data = ticker_obj.quarterly_cashflow
             if cash_flow_data.empty:
                 print(f"  Warning: Could not fetch cash flow (annual or quarterly) for {symbol}. Returning None.")
@@ -162,27 +183,36 @@ def cash_flow(symbol: str) -> pd.DataFrame | None:
         # Transpose and reset index, renaming the index column to "Date"
         cf_df = cash_flow_data.T.reset_index().rename(columns={"index": "Date"})
 
-        cash_flow_cols_available = [
-            'Date', 'Operating Cash Flow', 'Capital Expenditure', 'Free Cash Flow', 'Cash Dividends Paid'
-        ]
-
         # Add the symbol column
         if 'symbol' not in cf_df.columns:
-             cf_df.insert(0, 'symbol', symbol) # Insert symbol at the beginning
+            cf_df.insert(0, 'symbol', symbol) # Insert symbol at the beginning
 
-        # Select only the available columns, ensuring 'symbol' is included
-        final_cols = ['symbol'] + cash_flow_cols_available
-        cash_flow_cleaned_df = cf_df.reindex(columns=final_cols)
-
-        # cash_flow_cleaned_df.to_csv("cash_flow_cleaned.csv", index=False) # Commented out as requested
+        # Create a mapping from Yahoo Finance column names to our new database column names
+        column_mapping = {
+            'Operating Cash Flow': 'operating_cash_flow',
+            'Capital Expenditure': 'capital_expenditure', 
+            'Free Cash Flow': 'free_cash_flow',
+            'Cash Dividends Paid': 'cash_dividends_paid'
+        }
+        
+        # Create a new DataFrame with our desired column structure
+        result_df = pd.DataFrame()
+        result_df['symbol'] = cf_df['symbol']
+        result_df['Date'] = cf_df['Date']
+        
+        # Map the columns using our mapping
+        for original_col, new_col in column_mapping.items():
+            if original_col in cf_df.columns:
+                result_df[new_col] = cf_df[original_col]
+            else:
+                result_df[new_col] = None  # Add column with NULLs if not available
+        
         print(f"  Successfully fetched cash flow for {symbol}.")
-        return cash_flow_cleaned_df
+        return result_df
 
     except Exception as e:
         print(f"  An error occurred while fetching cash flow for {symbol}: {e}")
-        return None
-    
-
+        return None   
 
 def current(symbol: str) -> pd.DataFrame | None:
     """
