@@ -66,41 +66,6 @@ class StockInfo(Base):
     sharesOutstanding = Column(Numeric(38, 0), nullable=True)
 
 
-
-# class BalanceSheet(Base):
-#     __tablename__ = "balance_sheet"
-
-#     symbol = Column(String, primary_key=True)
-#     Date = Column(Date, primary_key=True)
-#     total_assets = Column(Numeric(38, 2))
-#     total_debt = Column(Numeric(38, 2))
-#     stockholders_equity = Column(Numeric(38, 2))
-#     cash_and_cash_equivalents = Column(Numeric(38, 2))
-
-
-# class IncomeStatement(Base):
-#     __tablename__ = "income_statement"
-
-#     symbol = Column(String, primary_key=True)
-#     Date = Column(Date, primary_key=True)
-#     total_revenue = Column(Numeric(38, 2))
-#     gross_profit = Column(Numeric(38, 2))
-#     operating_income = Column(Numeric(38, 2))
-#     net_income = Column(Numeric(38, 2))
-#     basic_eps = Column(Float)  
-#     diluted_eps = Column(Float)  
-
-
-# class CashFlow(Base):
-#     __tablename__ = "cash_flow"
-
-#     symbol = Column(String, primary_key=True)
-#     Date = Column(Date, primary_key=True)
-#     operating_cash_flow = Column(Numeric(38, 2))
-#     capital_expenditure = Column(Numeric(38, 2))
-#     free_cash_flow = Column(Numeric(38, 2))
-#     cash_dividends_paid = Column(Numeric(38, 2))
-
 class BalanceSheet(Base):
     __tablename__ = "balance_sheet"
 

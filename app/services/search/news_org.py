@@ -1,3 +1,5 @@
+# app/services/search/news_org.py
+
 import requests
 from app.core.config import settings
 
@@ -56,7 +58,7 @@ def fetch_news(query="Indian stock market", sort="publishedAt", limit=10):
 
 
 
-def fetch_indian_news(query="Indian", stock=None, sort="publishedAt", limit=10):
+def fetch_indian_news(query=None, stock='company', sort="publishedAt", limit=10):
     """
     Fetches news articles related to the Indian stock market from specific domains using NewsAPI.
 
@@ -87,6 +89,8 @@ def fetch_indian_news(query="Indian", stock=None, sort="publishedAt", limit=10):
         search_query = f"{query} {stock}"
     else:
         search_query = query
+
+    # print('search query in news api -----------------', search_query)
 
     params = {
         "q": search_query,

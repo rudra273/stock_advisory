@@ -1,3 +1,6 @@
+# app/repositories/helper.py
+from typing import List, Optional
+from datetime import date
 from sqlalchemy.orm import Session
 from typing import List, Optional
 
@@ -9,6 +12,75 @@ from app.models.stock import (
     BalanceSheet, 
     IncomeStatement
 )
+
+
+def safe_divide(numerator, denominator):
+    """Safely divide two numbers, return None if denominator is 0 or None"""
+    if denominator is None or denominator == 0:
+        return None
+    if numerator is None:
+        return None
+    return float(numerator) / float(denominator)
+
+
+def get_latest_financial_data(statements: List, date_field: str = 'Date'):
+    """Get the most recent financial statement from a list"""
+    if not statements:
+        return None
+    return max(statements, key=lambda x: getattr(x, date_field))
+
+
+def get_previous_period_data(statements: List, current_date: date, date_field: str = 'Date'):
+    """Get the previous period's financial statement"""
+    if not statements or len(statements) < 2:
+        return None
+    
+    # Sort by date descending
+    sorted_statements = sorted(statements, key=lambda x: getattr(x, date_field), reverse=True)
+    
+    # Find current period and return the next one (previous chronologically)
+    for i, stmt in enumerate(sorted_statements):
+        if getattr(stmt, date_field) == current_date and i + 1 < len(sorted_statements):
+            return sorted_statements[i + 1]
+    return None
+
+
+def format_large_number(value: Optional[float], unit: str = "") -> str:
+    """Format large numbers with appropriate suffixes (K, M, B, T)"""
+    if value is None:
+        return "N/A"
+    
+    if abs(value) >= 1_000_000_000_000:
+        return f"{value / 1_000_000_000_000:.2f}T {unit}".strip()
+    elif abs(value) >= 1_000_000_000:
+        return f"{value / 1_000_000_000:.2f}B {unit}".strip()
+    elif abs(value) >= 1_000_000:
+        return f"{value / 1_000_000:.2f}M {unit}".strip()
+    elif abs(value) >= 1_000:
+        return f"{value / 1_000:.2f}K {unit}".strip()
+    else:
+        return f"{value:.2f} {unit}".strip()
+
+
+def format_percentage(value: Optional[float], decimal_places: int = 2) -> str:
+    """Format percentage values"""
+    if value is None:
+        return "N/A"
+    return f"{value:.{decimal_places}f}%"
+
+
+def format_currency(value: Optional[float], currency: str = "$", decimal_places: int = 2) -> str:
+    """Format currency values"""
+    if value is None:
+        return "N/A"
+    return f"{currency}{value:,.{decimal_places}f}"
+
+
+# ========================================================================================================
+
+
+# get metrics funtion.
+
 
 # Function to get all current prices
 def get_all_current_prices(db: Session) -> List[CurrentPrice]:

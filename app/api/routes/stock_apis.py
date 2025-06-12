@@ -1,9 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
+from datetime import date
+
 
 from app.db.config import get_db
-from app.repositories.stock import (
+from app.repositories.helper import (
     get_all_current_prices,
     get_current_price_by_symbol,
     get_daily_prices_by_symbol,
@@ -17,6 +19,10 @@ from app.repositories.stock import (
     get_cash_flows_by_symbol,
     get_stock_profile_by_symbol
 )
+
+# from app.repositories.stock_kpis import get_metrics_by_category
+from app.repositories.optimized_stock_kpis import get_metrics_by_category
+
 from app.schemas.stock import (
     StockInfoResponse,
     CurrentPriceResponse,
@@ -28,9 +34,68 @@ from app.schemas.stock import (
 
 router = APIRouter(prefix="/stocks", tags=["Stocks"])
 
-# Get Full stock data of the profile
+
+
+# NEW API: Get organized stock profile with all metrics by category
 @router.get("/stock_profile/{symbol}")
-def get_stock_profile(symbol: str, db: Session = Depends(get_db)):
+def get_stock_profile_metrics(
+    symbol: str, 
+    period_date: Optional[date] = Query(None, description="Specific date for financial statements (YYYY-MM-DD). Uses latest if not provided."),
+    db: Session = Depends(get_db)
+) -> Dict[str, Dict[str, Any]]:
+    """
+    Get comprehensive stock profile with all metrics organized by category.
+    
+    Args:
+        symbol: Stock symbol (e.g., 'AAPL')
+        period_date: Optional specific date for financial statements
+        
+    Returns:
+        Dictionary containing all stock metrics organized by categories:
+        - price_data: Current and historical price information
+        - company_info: Basic company information
+        - valuation_ratios: P/E, P/B, P/S ratios
+        - earnings_data: EPS and earnings information
+        - profitability_ratios: ROE, ROA, margins
+        - financial_strength: Debt ratios, asset turnover
+        - dividend_data: Dividend rate, yield, payout ratio
+        - growth_rates: Revenue and earnings growth
+        - technical_indicators: RSI, moving averages, volatility
+        - financial_statements: Latest balance sheet, income statement, cash flow data
+    """
+    try:
+        symbol = symbol.upper()
+        
+        # Get organized metrics by category
+        profile_metrics = get_metrics_by_category(db, symbol, period_date)
+        
+        # Check if any data was found
+        has_data = any(
+            any(category_data.values()) if isinstance(category_data, dict) else bool(category_data)
+            for category_data in profile_metrics.values()
+        )
+        
+        if not has_data:
+            raise HTTPException(
+                status_code=404, 
+                detail=f"No profile data found for symbol '{symbol}'"
+            )
+
+        return profile_metrics
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Failed to fetch stock profile metrics for '{symbol}': {str(e)}"
+        )
+
+
+
+# Get Full stock data of the profile direct 
+@router.get("/stock_all/{symbol}")
+def get_stock_all(symbol: str, db: Session = Depends(get_db)):
     try:
         symbol = symbol.upper()
         profile_data = get_stock_profile_by_symbol(db, symbol)

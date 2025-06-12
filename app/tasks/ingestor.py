@@ -11,6 +11,8 @@ from app.services.stock.helper import (
     fetch_daily_prices, fetch_current_prices
 )
 
+# create a ingest matrics function.
+
 
 def ingest_stock_info():
     df = fetch_stock_info()

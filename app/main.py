@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware # Import CORSMiddleware
 from app.core.config import settings
 from app.api.routes.ingest import router as ingest_router 
 from app.db.db_init import init_db
-from app.api.routes.stock import router as stock_router
+from app.api.routes.stock_apis import router as stock_router
 
 
 app = FastAPI(
