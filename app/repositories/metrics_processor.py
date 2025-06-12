@@ -462,3 +462,268 @@ class CalculatedMetrics:
             "moving_averages": self.calculate_moving_averages(),
             "rsi": self.calculate_rsi()
         }
+    
+    # Add these methods to your CalculatedMetrics class in metrics_processor.py
+
+    def calculate_macd(self, fast_period: int = 12, slow_period: int = 26, signal_period: int = 9) -> Dict[str, Optional[float]]:
+        """Calculate MACD (Moving Average Convergence Divergence)"""
+        daily_prices = self.processor._get_cached_data('daily_prices')
+        
+        if not daily_prices or len(daily_prices) < slow_period:
+            return {"macd": None, "signal": None, "histogram": None, "crossover_date": None}
+        
+        sorted_prices = sorted(daily_prices, key=lambda x: x.Date, reverse=True)
+        
+        # Get closing prices
+        closes = [price.Close for price in sorted_prices if price.Close is not None]
+        
+        if len(closes) < slow_period:
+            return {"macd": None, "signal": None, "histogram": None, "crossover_date": None}
+        
+        # Calculate EMAs
+        def calculate_ema(prices, period):
+            multiplier = 2 / (period + 1)
+            ema = [prices[0]]  # Start with first price
+            
+            for i in range(1, len(prices)):
+                ema_value = (prices[i] * multiplier) + (ema[-1] * (1 - multiplier))
+                ema.append(ema_value)
+            
+            return ema
+        
+        # Reverse for chronological order
+        closes.reverse()
+        
+        if len(closes) >= slow_period:
+            fast_ema = calculate_ema(closes, fast_period)
+            slow_ema = calculate_ema(closes, slow_period)
+            
+            # Calculate MACD line
+            macd_line = []
+            for i in range(len(fast_ema)):
+                if i < slow_period - 1:
+                    macd_line.append(0)
+                else:
+                    macd_line.append(fast_ema[i] - slow_ema[i])
+            
+            # Calculate Signal line (EMA of MACD)
+            macd_values = [x for x in macd_line if x != 0]
+            if len(macd_values) >= signal_period:
+                signal_line = calculate_ema(macd_values, signal_period)
+                
+                # Calculate histogram
+                current_macd = macd_line[-1]
+                current_signal = signal_line[-1]
+                histogram = current_macd - current_signal
+                
+                # Check for recent crossover (last 5 days)
+                crossover_date = None
+                if len(signal_line) >= 2:
+                    prev_histogram = macd_line[-2] - signal_line[-2] if len(signal_line) > 1 else 0
+                    if (prev_histogram <= 0 and histogram > 0) or (prev_histogram >= 0 and histogram < 0):
+                        crossover_date = sorted_prices[-1].Date
+                
+                return {
+                    "macd": current_macd,
+                    "signal": current_signal,
+                    "histogram": histogram,
+                    "crossover_date": crossover_date
+                }
+        
+        return {"macd": None, "signal": None, "histogram": None, "crossover_date": None}
+
+    def calculate_stochastic_oscillator(self, k_period: int = 14, d_period: int = 3) -> Dict[str, Optional[float]]:
+        """Calculate Stochastic Oscillator (%K and %D)"""
+        daily_prices = self.processor._get_cached_data('daily_prices')
+        
+        if not daily_prices or len(daily_prices) < k_period:
+            return {"percent_k": None, "percent_d": None}
+        
+        sorted_prices = sorted(daily_prices, key=lambda x: x.Date, reverse=True)[:k_period + d_period]
+        
+        # Calculate %K
+        recent_prices = sorted_prices[:k_period]
+        
+        current_close = recent_prices[0].Close
+        if current_close is None:
+            return {"percent_k": None, "percent_d": None}
+        
+        # Find highest high and lowest low in the period
+        highest_high = max([p.High for p in recent_prices if p.High is not None])
+        lowest_low = min([p.Low for p in recent_prices if p.Low is not None])
+        
+        if highest_high == lowest_low:
+            percent_k = 50  # Avoid division by zero
+        else:
+            percent_k = ((current_close - lowest_low) / (highest_high - lowest_low)) * 100
+        
+        # Calculate %D (moving average of %K)
+        # For simplicity, we'll calculate %D as a 3-period average of %K values
+        k_values = []
+        for i in range(min(d_period, len(sorted_prices) - k_period + 1)):
+            subset = sorted_prices[i:i + k_period]
+            close = subset[0].Close
+            if close is not None:
+                high = max([p.High for p in subset if p.High is not None])
+                low = min([p.Low for p in subset if p.Low is not None])
+                if high != low:
+                    k_val = ((close - low) / (high - low)) * 100
+                    k_values.append(k_val)
+        
+        percent_d = sum(k_values) / len(k_values) if k_values else None
+        
+        return {
+            "percent_k": percent_k,
+            "percent_d": percent_d
+        }
+
+    def calculate_atr(self, period: int = 14) -> Optional[float]:
+        """Calculate Average True Range (ATR) for volatility measurement"""
+        daily_prices = self.processor._get_cached_data('daily_prices')
+        
+        if not daily_prices or len(daily_prices) < period + 1:
+            return None
+        
+        sorted_prices = sorted(daily_prices, key=lambda x: x.Date, reverse=True)[:period + 1]
+        sorted_prices.reverse()  # Chronological order
+        
+        true_ranges = []
+        
+        for i in range(1, len(sorted_prices)):
+            current = sorted_prices[i]
+            previous = sorted_prices[i-1]
+            
+            if all([current.High, current.Low, previous.Close]):
+                tr1 = current.High - current.Low
+                tr2 = abs(current.High - previous.Close)
+                tr3 = abs(current.Low - previous.Close)
+                
+                true_range = max(tr1, tr2, tr3)
+                true_ranges.append(true_range)
+        
+        if len(true_ranges) >= period:
+            atr = sum(true_ranges[-period:]) / period
+            # Return as percentage of current price
+            current_price = sorted_prices[-1].Close
+            if current_price:
+                return (atr / current_price) * 100
+        
+        return None
+
+    def calculate_obv(self) -> Dict[str, Any]:
+        """Calculate On-Balance Volume (OBV) and its trend"""
+        daily_prices = self.processor._get_cached_data('daily_prices')
+        
+        if not daily_prices or len(daily_prices) < 2:
+            return {"obv": None, "obv_trend": None}
+        
+        sorted_prices = sorted(daily_prices, key=lambda x: x.Date, reverse=True)
+        sorted_prices.reverse()  # Chronological order
+        
+        obv = 0
+        obv_values = [0]
+        
+        for i in range(1, len(sorted_prices)):
+            current = sorted_prices[i]
+            previous = sorted_prices[i-1]
+            
+            if current.Close and previous.Close and current.Volume:
+                if current.Close > previous.Close:
+                    obv += current.Volume
+                elif current.Close < previous.Close:
+                    obv -= current.Volume
+                # If close == previous close, OBV stays the same
+                
+                obv_values.append(obv)
+        
+        # Determine trend (last 10 periods)
+        trend_period = min(10, len(obv_values))
+        if trend_period >= 2:
+            recent_obv = obv_values[-trend_period:]
+            if len(recent_obv) >= 2:
+                trend_slope = (recent_obv[-1] - recent_obv[0]) / (len(recent_obv) - 1)
+                if trend_slope > 0:
+                    obv_trend = "↑ trending"
+                elif trend_slope < 0:
+                    obv_trend = "↓ trending"
+                else:
+                    obv_trend = "→ sideways"
+            else:
+                obv_trend = "insufficient data"
+        else:
+            obv_trend = "insufficient data"
+        
+        return {
+            "obv": obv,
+            "obv_trend": obv_trend
+        }
+
+    def identify_support_resistance_levels(self) -> Dict[str, Any]:
+        """Identify key support and resistance levels"""
+        daily_prices = self.processor._get_cached_data('daily_prices')
+        
+        if not daily_prices or len(daily_prices) < 20:
+            return {"support": None, "resistance": None, "confidence": "Low"}
+        
+        # Get last 60 days of data for better level identification
+        sorted_prices = sorted(daily_prices, key=lambda x: x.Date, reverse=True)[:60]
+        
+        current_price = sorted_prices[0].Close
+        if not current_price:
+            return {"support": None, "resistance": None, "confidence": "Low"}
+        
+        # Find significant highs and lows
+        highs = []
+        lows = []
+        
+        for i, price in enumerate(sorted_prices):
+            if price.High and price.Low:
+                # Look for local maxima and minima
+                if i > 2 and i < len(sorted_prices) - 2:
+                    # Check if it's a local high
+                    if (price.High > sorted_prices[i-1].High and 
+                        price.High > sorted_prices[i-2].High and
+                        price.High > sorted_prices[i+1].High and 
+                        price.High > sorted_prices[i+2].High):
+                        highs.append(price.High)
+                    
+                    # Check if it's a local low
+                    if (price.Low < sorted_prices[i-1].Low and 
+                        price.Low < sorted_prices[i-2].Low and
+                        price.Low < sorted_prices[i+1].Low and 
+                        price.Low < sorted_prices[i+2].Low):
+                        lows.append(price.Low)
+        
+        # Find resistance (closest significant high above current price)
+        resistance_levels = [h for h in highs if h > current_price]
+        resistance = min(resistance_levels) if resistance_levels else None
+        
+        # Find support (closest significant low below current price)
+        support_levels = [l for l in lows if l < current_price]
+        support = max(support_levels) if support_levels else None
+        
+        # Determine confidence based on how many times levels were tested
+        confidence = "Moderate"
+        if len(highs) >= 3 and len(lows) >= 3:
+            confidence = "High"
+        elif len(highs) < 2 or len(lows) < 2:
+            confidence = "Low"
+        
+        return {
+            "support": support,
+            "resistance": resistance,
+            "confidence": confidence
+        }
+
+    def get_comprehensive_technical_analysis(self) -> Dict[str, Any]:
+        """Get all technical analysis indicators in one call"""
+        return {
+            "moving_averages": self.calculate_moving_averages([50, 200]),
+            "rsi": self.calculate_rsi(),
+            "macd": self.calculate_macd(),
+            "stochastic": self.calculate_stochastic_oscillator(),
+            "atr": self.calculate_atr(),
+            "obv": self.calculate_obv(),
+            "volatility": self.calculate_volatility(),
+            "support_resistance": self.identify_support_resistance_levels()
+        }
