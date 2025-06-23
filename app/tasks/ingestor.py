@@ -11,7 +11,8 @@ from app.services.stock.helper import (
     fetch_daily_prices, fetch_current_prices
 )
 
-# create a ingest matrics function.
+from app.models.market_sentiment import MarketSentiment
+from app.services.crawler.market_index import fear_greed_index, mmi
 
 
 def ingest_stock_info():
@@ -73,3 +74,36 @@ def ingest_current_prices():
             db.bulk_insert_mappings(CurrentPrice, df.to_dict(orient="records"))
             db.commit()
             print("Current prices ingested successfully.")
+
+
+# ...existing code...
+
+
+def ingest_market_sentiment():
+    # Ingest CNN Fear & Greed Index
+    cnn_data = fear_greed_index()
+    if cnn_data:
+        with next(get_db()) as db:
+            db.query(MarketSentiment).filter(MarketSentiment.source == "CNN Fear & Greed Index").delete()
+            db.add(MarketSentiment(
+                source="CNN Fear & Greed Index",
+                score=cnn_data['score'],
+                rating=cnn_data['rating'],
+                last_updated=cnn_data['last_updated']
+            ))
+            db.commit()
+            print("CNN Fear & Greed Index ingested successfully.")
+
+    # Ingest Market Mood Index
+    mmi_data = mmi()
+    if mmi_data:
+        with next(get_db()) as db:
+            db.query(MarketSentiment).filter(MarketSentiment.source == "Tickertape Market Mood Index").delete()
+            db.add(MarketSentiment(
+                source="Tickertape Market Mood Index",
+                score=mmi_data['score'],
+                rating=mmi_data['rating'],
+                last_updated=mmi_data['last_updated']
+            ))
+            db.commit()
+            print("Market Mood Index ingested successfully.")

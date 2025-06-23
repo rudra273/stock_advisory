@@ -18,7 +18,7 @@ from app.models.stock import (
     IncomeStatement
 )
 
-from app.repositories.get_stock import (
+from app.repositories.helper import (
     get_current_price_by_symbol,
     get_stock_info_by_symbol,
     get_balance_sheets_by_symbol,

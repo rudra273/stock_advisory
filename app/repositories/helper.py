@@ -90,7 +90,7 @@ def get_all_current_prices(db: Session) -> List[CurrentPrice]:
 def get_current_price_by_symbol(db: Session, symbol: str) -> Optional[CurrentPrice]:
     return db.query(CurrentPrice).filter(CurrentPrice.symbol == symbol.upper()).first()
 
-# Function to get daily prices by symbol
+# Function to get daily prices by symbol for 1 yr 
 def get_daily_prices_by_symbol(db: Session, symbol: str) -> List[DailyPrice]:
     return db.query(DailyPrice).filter(DailyPrice.symbol == symbol.upper()).all()
 

@@ -6,7 +6,9 @@ from app.tasks.ingestor import (
     ingest_balance_sheet,
     ingest_income_statement,
     ingest_cash_flow,
+    ingest_market_sentiment
 )
+
 
 router = APIRouter(prefix="/ingest", tags=["Ingestion"])
 
@@ -40,3 +42,11 @@ def trigger_cash_flow_ingestion():
     df = ingest_cash_flow()
     return {"message": "Cash flow ingestion triggered", "rows": len(df) if df is not None else 0}
 
+
+
+
+
+@router.post("/market-sentiment")
+def ingest_market_sentiment_endpoint():
+    ingest_market_sentiment()
+    return {"message": "Market sentiment ingested successfully"}

@@ -4,27 +4,27 @@ from app.agents.search_agent import search_stock_news, search_generic_news, sear
 from app.agents.technical_analysis_agent import TechnicalAnalysisAgent
 
 
-def test():
-    db = SessionLocal()
-    try:
-        symbol = "TCS.NS"
-        period_date = date(2025, 3, 31)
+# def test():
+#     db = SessionLocal()
+#     try:
+#         symbol = "TCS.NS"
+#         period_date = date(2025, 3, 31)
 
-       # Initialize with database session
-        tech_agent = TechnicalAnalysisAgent(db)
-        # Analyze a stock
-        result = tech_agent.execute(symbol)
+#        # Initialize with database session
+#         tech_agent = TechnicalAnalysisAgent(db)
+#         # Analyze a stock
+#         result = tech_agent.execute(symbol)
 
-        print(result)
-        # Access results
-        # print(result["executive_summary"]["sentiment"])  # "Bullish"
-        # print(result["executive_summary"]["core_thesis"])  # Dynamic thesis
-        # print(result["narrative_analysis"]["bullish_signals"])  # List of bullish signals
-        # print(result["data_table"]) 
-    finally:
-        db.close()
+#         print(result)
+#         # Access results
+#         # print(result["executive_summary"]["sentiment"])  # "Bullish"
+#         # print(result["executive_summary"]["core_thesis"])  # Dynamic thesis
+#         # print(result["narrative_analysis"]["bullish_signals"])  # List of bullish signals
+#         # print(result["data_table"]) 
+#     finally:
+#         db.close()
 
-test() 
+# test() 
 
 
 # Technical Analysis Agent Example Usage
@@ -45,16 +45,16 @@ test()
 
 
 # for the search agent
-# if __name__ == "__main__":
-    # # 1. Stock search with Google (comprehensive)
-    # print("=== Stock Search (With Google) ===")
-    # stock_results = search_stock_news("Reliance", use_google=False)
-    # print(stock_results)
-    # print(f"Query: {stock_results['query']}")
-    # print(f"News Org Summary: {stock_results['news_org_summary']}")
-    # print(f"Google Summary: {stock_results['google_summary']}")
-    # print(f"Overall Summary: {stock_results['overall_summary']}")
-    # print(f"Domains: {', '.join(stock_results['sources']['domains'])}")
+if __name__ == "__main__":
+    # 1. Stock search with Google (comprehensive)
+    print("=== Stock Search (With Google) ===")
+    stock_results = search_stock_news("Reliance power", use_google=False)
+    print(stock_results)
+    print(f"Query: {stock_results['query']}")
+    print(f"News Org Summary: {stock_results['news_org_summary']}")
+    print(f"Google Summary: {stock_results['google_summary']}")
+    print(f"Overall Summary: {stock_results['overall_summary']}")
+    print(f"Domains: {', '.join(stock_results['sources']['domains'])}")
     
     # # 2. Generic market search with Google
     # print("\n=== Generic Market Search (With Google) ===")
@@ -68,7 +68,7 @@ test()
     
     # # 3. Google-only search (NEW)
     # print("\n=== Google-Only Search ===")
-    # google_results = search_google_only("artificial intelligence trends 2025")
+    # google_results = search_google_only("artificial in")
     # print(f"Query: {google_results['query']}")
     # print(f"Summary: {google_results['summary']}")
     # print(f"Domains: {', '.join(google_results['sources']['domains'])}") 

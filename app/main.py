@@ -2,9 +2,11 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware # Import CORSMiddleware
 from app.core.config import settings
-from app.api.routes.ingest import router as ingest_router 
 from app.db.db_init import init_db
+
+from app.api.routes.ingest import router as ingest_router 
 from app.api.routes.stock_apis import router as stock_router
+from app.api.routes.market_sentiment_api import router as market_sentiment
 
 
 app = FastAPI(
@@ -35,6 +37,7 @@ def on_startup():
 # Register the ingestion router
 app.include_router(ingest_router)
 app.include_router(stock_router)
+app.include_router(market_sentiment)
 
 
 # Base API (root endpoint)

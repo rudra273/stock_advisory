@@ -4,6 +4,31 @@ import requests
 from bs4 import BeautifulSoup
 import json
 import re
+import datetime
+
+def _relative_time_from_iso(iso_time):
+    """
+    Converts an ISO 8601 timestamp to a human-readable relative time string.
+    Example: "2025-06-16T10:15:31+00:00" -> "Updated 7 minutes ago"
+    """
+    try:
+        dt = datetime.datetime.fromisoformat(iso_time.replace("Z", "+00:00"))
+        now = datetime.datetime.utcnow().replace(tzinfo=dt.tzinfo)
+        diff = now - dt
+        seconds = int(diff.total_seconds())
+        if seconds < 60:
+            return "Updated just now"
+        elif seconds < 3600:
+            minutes = seconds // 60
+            return f"Updated {minutes} minute{'s' if minutes != 1 else ''} ago"
+        elif seconds < 86400:
+            hours = seconds // 3600
+            return f"Updated {hours} hour{'s' if hours != 1 else ''} ago"
+        else:
+            days = seconds // 86400
+            return f"Updated {days} day{'s' if days != 1 else ''} ago"
+    except Exception:
+        return iso_time  # fallback
 
 def get_cnn_fear_greed_index():
     """
@@ -42,43 +67,31 @@ def get_cnn_fear_greed_index():
 def get_market_mood_index():
     """
     Scrapes the Market Mood Index (MMI) from the Tickertape website.
-    
     Returns:
         dict: A dictionary containing:
             - 'mmi_value': The current MMI value as a float
             - 'mmi_zone': The current market mood zone (e.g., 'Extreme Greed')
             - 'last_updated': When the MMI was last updated
-    
-    Raises:
-        ConnectionError: If unable to connect to the website
-        ValueError: If unable to parse the MMI value from the page
     """
     url = "https://www.tickertape.in/market-mood-index"
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
     }
-    
     try:
-        # Make the request
         response = requests.get(url, headers=headers)
-        response.raise_for_status()  # Raise an exception for 4XX/5XX responses
-        
-        # Parse the HTML content
+        response.raise_for_status()
         soup = BeautifulSoup(response.text, 'html.parser')
-        
-        # Find the MMI value
         mmi_value_element = soup.select_one("div.mmi-value span.number")
         if not mmi_value_element:
             raise ValueError("Could not find MMI value element on the page")
-        
         mmi_value = float(mmi_value_element.text.strip())
-        
-        # Find the last updated information
         last_updated_element = soup.select_one("div.mmi-value p.date")
         last_updated = last_updated_element.text.strip() if last_updated_element else "Unknown"
-        
-        # Determine the current mood zone
-        # We can extract this from the page or determine it based on the MMI value
+
+        # If last_updated is "Updated just now" or similar, use current UTC time in ISO 8601 format
+        if not last_updated or "just now" in last_updated.lower():
+            last_updated = datetime.datetime.utcnow().replace(microsecond=0).isoformat() + "+00:00"
+
         if mmi_value > 70:
             mood_zone = "Extreme Greed"
         elif mmi_value > 50:
@@ -87,20 +100,16 @@ def get_market_mood_index():
             mood_zone = "Fear"
         else:
             mood_zone = "Extreme Fear"
-        
-        # For more accurate zone determination, we can also extract it directly from the page
         mood_text = soup.select_one("p.text.text-secondary")
         if mood_text:
             zone_match = re.search(r'MMI is in <span class="font-medium">the (.*?) zone', mood_text.text)
             if zone_match:
                 mood_zone = zone_match.group(1).strip().title()
-        
         return {
             "mmi_value": mmi_value,
             "mmi_zone": mood_zone,
             "last_updated": last_updated
         }
-        
     except requests.exceptions.RequestException as e:
         raise ConnectionError(f"Failed to connect to Tickertape: {e}")
     except ValueError as e:
@@ -118,11 +127,12 @@ def fear_greed_index():
         score = int(round(cnn_index_data['fear_and_greed']['score']))
         rating = cnn_index_data['fear_and_greed']['rating']
         timestamp = cnn_index_data['fear_and_greed']['timestamp']
+        last_updated = _relative_time_from_iso(timestamp)
         
         return {
             'score': score,
             'rating': rating,
-            'last_updated': timestamp,
+            'last_updated': last_updated,
             'source': 'CNN Fear & Greed Index'
         }
     except Exception as e:
