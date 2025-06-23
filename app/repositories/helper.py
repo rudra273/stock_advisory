@@ -91,8 +91,23 @@ def get_current_price_by_symbol(db: Session, symbol: str) -> Optional[CurrentPri
     return db.query(CurrentPrice).filter(CurrentPrice.symbol == symbol.upper()).first()
 
 # Function to get daily prices by symbol for 1 yr 
-def get_daily_prices_by_symbol(db: Session, symbol: str) -> List[DailyPrice]:
-    return db.query(DailyPrice).filter(DailyPrice.symbol == symbol.upper()).all()
+# def get_daily_prices_by_symbol(db: Session, symbol: str) -> List[DailyPrice]:
+#     return db.query(DailyPrice).filter(DailyPrice.symbol == symbol.upper()).all()
+
+def get_daily_prices_by_symbol(db: Session, symbol: str, limit: Optional[int] = None) -> List[DailyPrice]:
+ 
+    # Start the query and filter by the symbol
+    query = db.query(DailyPrice).filter(DailyPrice.symbol == symbol.upper())
+    
+    # CRITICAL: Always sort by date in descending order to get the latest prices first
+    query = query.order_by(DailyPrice.Date.desc())
+    
+    # Apply the limit if it was provided
+    if limit:
+        query = query.limit(limit)
+        
+    return query.all()
+
 
 # Function to get all stock info
 def get_all_stock_info(db: Session) -> List[StockInfo]:

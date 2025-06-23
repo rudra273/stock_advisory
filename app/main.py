@@ -7,6 +7,7 @@ from app.db.db_init import init_db
 from app.api.routes.ingest import router as ingest_router 
 from app.api.routes.stock_apis import router as stock_router
 from app.api.routes.market_sentiment_api import router as market_sentiment
+from app.api.routes.agents_apis import router as agents_router
 
 
 app = FastAPI(
@@ -38,6 +39,7 @@ def on_startup():
 app.include_router(ingest_router)
 app.include_router(stock_router)
 app.include_router(market_sentiment)
+app.include_router(agents_router)
 
 
 # Base API (root endpoint)
